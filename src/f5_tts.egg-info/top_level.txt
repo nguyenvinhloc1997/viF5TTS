@@ -2,4 +2,3 @@ f5_tts
 infer
 model_pruning
 streaming
-third_party

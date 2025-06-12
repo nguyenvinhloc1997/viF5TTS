@@ -66,13 +66,17 @@ src/f5_tts/model/dataset.py
 src/f5_tts/model/duration_predictor.py
 src/f5_tts/model/f5tts_wrapper-dur_pred.py
 src/f5_tts/model/modules.py
+src/f5_tts/model/preprocess_phoneme.py
 src/f5_tts/model/trainer.py
 src/f5_tts/model/utils.py
 src/f5_tts/model/.ipynb_checkpoints/__init__-checkpoint.py
+src/f5_tts/model/.ipynb_checkpoints/alignment_utils-checkpoint.py
 src/f5_tts/model/.ipynb_checkpoints/cfm-checkpoint.py
 src/f5_tts/model/.ipynb_checkpoints/dataset-checkpoint.py
 src/f5_tts/model/.ipynb_checkpoints/duration_predictor-checkpoint.py
+src/f5_tts/model/.ipynb_checkpoints/f5tts_wrapper-dur_pred-checkpoint.py
 src/f5_tts/model/.ipynb_checkpoints/modules-checkpoint.py
+src/f5_tts/model/.ipynb_checkpoints/preprocess_phoneme-checkpoint.py
 src/f5_tts/model/.ipynb_checkpoints/trainer-checkpoint.py
 src/f5_tts/model/.ipynb_checkpoints/utils-checkpoint.py
 src/f5_tts/model/__pycache__/__init__.cpython-310.pyc
@@ -117,6 +121,7 @@ src/infer/F5TTS_Test.ipynb
 src/infer/F5TTS_v1_Custom_Pruned_12.yaml
 src/infer/f5tts_wrapper.py
 src/infer/update_213000_ref.wav
+src/infer/.ipynb_checkpoints/f5tts_wrapper-checkpoint.py
 src/infer/model/vocab.txt
 src/model_pruning/excellent_definitive-f5tts-pruner.py
 src/model_pruning/f5tts_wrapper.py
@@ -132,3 +137,4 @@ src/streaming/f5tts_wrapper.py
 src/streaming/.ipynb_checkpoints/client-checkpoint.html
 src/streaming/.ipynb_checkpoints/f5tts-fastapi-server-checkpoint.py
 src/streaming/.ipynb_checkpoints/f5tts-node-client-checkpoint.js
+src/streaming/.ipynb_checkpoints/f5tts_wrapper-checkpoint.py

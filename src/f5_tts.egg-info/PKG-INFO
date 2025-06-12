@@ -7,6 +7,7 @@ Project-URL: Homepage, https://github.com/EraX-AI/viF5TTS
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python :: 3
+Requires-Python: <3.12,>=3.10
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: accelerate>=0.33.0
@@ -51,7 +52,7 @@ Dynamic: license-file
   <img src="https://cdn-uploads.huggingface.co/production/uploads/63d8d8879dfcfa941d4d7cd9/GsQKdaTyn2FFx_cZvVHk3.png" alt="Logo">
 </p>
 
-# UPDATE:
+# UPDATE: 
 
 ## Streaming
 ```
