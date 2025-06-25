@@ -1,7 +1,9 @@
+.gitignore
 LICENSE
 README.md
 pyproject.toml
 ruff.toml
+uv.lock
 .ipynb_checkpoints/README-checkpoint.md
 .ipynb_checkpoints/pyproject-checkpoint.toml
 src/README.md
@@ -138,3 +140,8 @@ src/streaming/.ipynb_checkpoints/client-checkpoint.html
 src/streaming/.ipynb_checkpoints/f5tts-fastapi-server-checkpoint.py
 src/streaming/.ipynb_checkpoints/f5tts-node-client-checkpoint.js
 src/streaming/.ipynb_checkpoints/f5tts_wrapper-checkpoint.py
+voice_samples/huong_giang_4.wav
+voice_samples/nam_mien_bac_1.wav
+voice_samples/nam_mien_nam_1.wav
+voice_samples/nu_mien_bac_1.wav
+voice_samples/nu_mien_nam_1.wav

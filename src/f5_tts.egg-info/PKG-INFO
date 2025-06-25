@@ -39,6 +39,10 @@ Requires-Dist: x_transformers>=1.31.14
 Requires-Dist: onnx
 Requires-Dist: onnxruntime
 Requires-Dist: vinorm
+Requires-Dist: viphoneme>=3.0.0
+Requires-Dist: underthesea>=6.8.4
+Requires-Dist: eng-to-ipa>=0.0.2
+Requires-Dist: phonemizer>=3.3.0
 Provides-Extra: eval
 Requires-Dist: faster_whisper==0.10.1; extra == "eval"
 Requires-Dist: funasr; extra == "eval"

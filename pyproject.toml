@@ -44,6 +44,10 @@ dependencies = [
     "onnx",
     "onnxruntime",
     "vinorm",
+    "viphoneme>=3.0.0",
+    "underthesea>=6.8.4",
+    "eng-to-ipa>=0.0.2",
+    "phonemizer>=3.3.0",
 ]
 
 [project.optional-dependencies]
