@@ -27,7 +27,9 @@ AVAILABLE_MODELS = {
             "vi-fine-tuned-f5-tts.yaml",       # Configuration file
             "vocab.txt"                         # Vocabulary file
         ],
-        "local_dir": "models/danhtran2mind_vi-f5-tts"
+        "local_dir": "models/danhtran2mind_vi-f5-tts",
+        "needs_custom_config": True,
+        "config_file": "vi-fine-tuned-f5-tts.yaml"
     },
     "erax-ai/EraX-Smile-UnixSex-F5": {
         "name": "EraX Smile UnixSex F5",
@@ -39,14 +41,91 @@ AVAILABLE_MODELS = {
             "models/vocab.txt",
             "models/F5TTS_v1_Base.yaml"
         ],
-        "local_dir": "models/erax-ai_EraX-Smile-UnixSex-F5"
+        "local_dir": "models/erax-ai_EraX-Smile-UnixSex-F5",
+        "needs_custom_config": False
     },
-    
 }
 
 def create_model_folder_name(repo_id):
     """Create a clean folder name from repository ID"""
     return repo_id.replace("/", "_").replace("-", "_")
+
+def create_custom_config_symlink(model_info):
+    """Create symbolic link for custom config files to work with F5TTSWrapper"""
+    if not model_info.get("needs_custom_config"):
+        return True
+    
+    config_file = model_info.get("config_file")
+    if not config_file:
+        logging.warning("Model needs custom config but no config_file specified")
+        return False
+    
+    # Source: actual config file in model directory
+    source_config = Path(model_info["local_dir"]) / config_file
+    
+    # Target: symlink with "custom" in name in models root
+    target_config = Path("models") / f"custom-{model_info['local_dir'].split('/')[-1]}-config.yaml"
+    
+    try:
+        # Remove existing symlink if it exists
+        if target_config.exists() or target_config.is_symlink():
+            target_config.unlink()
+        
+        # Create relative symlink
+        relative_source = os.path.relpath(source_config, target_config.parent)
+        target_config.symlink_to(relative_source)
+        
+        logging.info(f"✓ Created custom config symlink: {target_config} -> {source_config}")
+        logging.info(f"  Use this in F5TTSWrapper: model_name='{target_config}'")
+        return True
+        
+    except Exception as e:
+        logging.error(f"✗ Failed to create custom config symlink: {e}")
+        return False
+
+def setup_model_files(model_info):
+    """Setup model files after download (create symlinks, etc.)"""
+    logging.info("Setting up model files...")
+    
+    # Create custom config symlink if needed
+    if model_info.get("needs_custom_config"):
+        if not create_custom_config_symlink(model_info):
+            logging.warning("Custom config symlink creation failed, model may not work properly")
+    
+    # Copy commonly used files to models root for easy access
+    model_dir = Path(model_info["local_dir"])
+    models_root = Path("models")
+    
+    # Check for vocab.txt and copy to models root if it doesn't exist
+    vocab_candidates = [
+        model_dir / "vocab.txt",
+        model_dir / "models" / "vocab.txt"  # For erax models
+    ]
+    
+    root_vocab = models_root / "vocab.txt"
+    if not root_vocab.exists():
+        for vocab_path in vocab_candidates:
+            if vocab_path.exists():
+                import shutil
+                shutil.copy2(vocab_path, root_vocab)
+                logging.info(f"✓ Copied vocab.txt to models root: {vocab_path} -> {root_vocab}")
+                break
+    
+    # Check for model files and copy/symlink popular ones to models root
+    model_candidates = [
+        (model_dir / "models" / "overfit.safetensors", models_root / "overfit.safetensors"),
+        (model_dir / "models" / "model_48000.safetensors", models_root / "model_48000.safetensors"),
+    ]
+    
+    for source, target in model_candidates:
+        if source.exists() and not target.exists():
+            try:
+                # Create relative symlink
+                relative_source = os.path.relpath(source, target.parent)
+                target.symlink_to(relative_source)
+                logging.info(f"✓ Created model symlink: {target} -> {source}")
+            except Exception as e:
+                logging.debug(f"Could not create symlink for {source}: {e}")
 
 def list_available_models():
     """List all available models"""
@@ -56,6 +135,8 @@ def list_available_models():
         logging.info(f"   Repository: {repo_id}")
         logging.info(f"   Description: {info['description']}")
         logging.info(f"   Local folder: {info['local_dir']}")
+        if info.get("needs_custom_config"):
+            logging.info(f"   ⚙️  Uses custom config: {info.get('config_file')}")
         logging.info("")
 
 def download_file_with_progress(repo_id, filename, local_dir):
@@ -97,7 +178,8 @@ def download_model(repo_id, custom_files=None):
             "name": f"Custom model: {repo_id}",
             "description": "Auto-detected model",
             "files": custom_files or [],
-            "local_dir": f"models/{folder_name}"
+            "local_dir": f"models/{folder_name}",
+            "needs_custom_config": False
         }
     
     logging.info(f"Downloading model: {model_info['name']}")
@@ -158,8 +240,16 @@ def download_model(repo_id, custom_files=None):
         logging.error(f"✗ Failed to download: {failed_files}")
         return False
     
+    # Setup model files (symlinks, etc.)
+    setup_model_files(model_info)
+    
     logging.info(f"🎉 Model download completed!")
     logging.info(f"📁 Files saved to: {model_info['local_dir']}/")
+    
+    if model_info.get("needs_custom_config"):
+        custom_config_link = Path("models") / f"custom-{model_info['local_dir'].split('/')[-1]}-config.yaml"
+        logging.info(f"🔗 Custom config available at: {custom_config_link}")
+        logging.info(f"   Use this in F5TTSWrapper: model_name='{custom_config_link}'")
     
     return True
 

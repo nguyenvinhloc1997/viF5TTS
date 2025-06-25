@@ -8,6 +8,42 @@ os.environ["CUDA_VISIBLE_DEVICES"] =  "0" # Tell it which GPU to use (or ignore 
 from vinorm import TTSnorm # Gotta normalize that Vietnamese text first
 from f5_tts.infer.f5tts_wrapper import F5TTSWrapper # Our handy wrapper class
 
+# === MODEL SELECTION ===
+# Choose one of: "erax_overfit", "erax_model_48000", "danhtran_vi_f5tts"
+SELECTED_MODEL = "erax_overfit"  # Change this to switch models
+
+# Model configurations (simplified)
+MODEL_CONFIGS = {
+    "erax_overfit": {
+        "name": "EraX Overfit Model",
+        "model_name": "F5TTS_v1_Base",  # Standard config
+        "ckpt_path": "models/overfit.safetensors",
+        "vocab_file": "models/vocab.txt",
+        "use_ema": False
+    },
+    "erax_model_48000": {
+        "name": "EraX Model 48000",
+        "model_name": "F5TTS_v1_Base",  # Standard config
+        "ckpt_path": "models/model_48000.safetensors", 
+        "vocab_file": "models/vocab.txt",
+        "use_ema": False
+    },
+    "danhtran_vi_f5tts": {
+        "name": "DanhTran Vietnamese F5-TTS",
+        "model_name": "models/custom-danhtran2mind_vi-f5-tts-config.yaml",  # Custom config with "custom" in path
+        "ckpt_path": "models/danhtran2mind_vi-f5-tts/ckpts/model_last.pt",
+        "vocab_file": "models/danhtran2mind_vi-f5-tts/vocab.txt",
+        "use_ema": True
+    }
+}
+
+# Get selected model config
+if SELECTED_MODEL not in MODEL_CONFIGS:
+    raise ValueError(f"Unknown model: {SELECTED_MODEL}. Available: {list(MODEL_CONFIGS.keys())}")
+
+model_config = MODEL_CONFIGS[SELECTED_MODEL]
+print(f"Selected model: {model_config['name']}")
+
 # --- Voice Configuration ---
 # Specify which voice to use from data/voice_configs.json
 voice_id = "nu_mien_nam_1"  # Available: huong_giang_4, nu_mien_bac_1, nam_mien_bac_1, nu_mien_nam_1, nam_mien_nam_1
@@ -27,15 +63,8 @@ def load_voice_config(voice_id):
 voice_config = load_voice_config(voice_id)
 
 # --- Config ---
-# Path to the model checkpoint you downloaded from *this* repo
-# MAKE SURE this path points to the actual .pth or .ckpt file!
-eraX_ckpt_path = "models/overfit.safetensors"
-
 # Path to the voice you want to clone (from voice config)
 ref_audio_path = f"voice_samples/{voice_config['filename']}"
-
-# Path to the vocab file from this repo
-vocab_file = "models/vocab.txt"
 
 # Where to save the generated sound
 output_dir = "outputs"
@@ -55,11 +84,14 @@ print(f"Using voice: {voice_config['voice_id']} ({voice_config['gender']}, {voic
 print(f"Reference audio: {ref_audio_path}")
 print(f"Speed setting: {speed}")
 print("Initializing the TTS engine... (Might take a sec)")
+
+# Initialize with selected model config
 tts = F5TTSWrapper(
-    vocoder_name="vocos", # Using Vocos vocoder
-    ckpt_path=eraX_ckpt_path,
-    vocab_file=vocab_file,
-    use_ema=False, # ALWAYS False as we converted from .pt to safetensors and EMA (where there is or not) was in there
+    model_name=model_config["model_name"],
+    ckpt_path=model_config["ckpt_path"],
+    vocab_file=model_config["vocab_file"],
+    vocoder_name="vocos",
+    use_ema=model_config["use_ema"],
 )
 
 # Normalize the reference text (makes it easier for the model)
