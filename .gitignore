@@ -218,6 +218,7 @@ outputs/
 results/
 generated/
 samples/
+models/
 
 # All egg-info
 *.egg-info
