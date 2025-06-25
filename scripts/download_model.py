@@ -23,22 +23,30 @@ AVAILABLE_MODELS = {
         "name": "Vietnamese F5-TTS by danhtran2mind",
         "description": "Vietnamese text-to-speech model fine-tuned on F5-TTS",
         "files": [
-            "ckpts/model_1200000.safetensors",  # Main model checkpoint
+            "ckpts/model_last.pt",  # Main model checkpoint
             "vi-fine-tuned-f5-tts.yaml",       # Configuration file
             "vocab.txt"                         # Vocabulary file
         ],
-        "local_dir": "models"
+        "local_dir": "models/danhtran2mind_vi-f5-tts"
     },
-    "erax-ai/EraX-Smile-Female-F5-V1.0": {
-        "name": "EraX Smile Female F5 V1.0",
-        "description": "Vietnamese female voice F5-TTS model",
+    "erax-ai/EraX-Smile-UnixSex-F5": {
+        "name": "EraX Smile UnixSex F5",
+        "description": "Vietnamese unisex voice F5-TTS model (supports both male and female)",
         "files": [
-            "model.pth",
-            "vocab.txt"
+            "models/model_48000.safetensors",
+            "models/overfit.safetensors",
+            "models/config.json",
+            "models/vocab.txt",
+            "models/F5TTS_v1_Base.yaml"
         ],
-        "local_dir": "models"
-    }
+        "local_dir": "models/erax-ai_EraX-Smile-UnixSex-F5"
+    },
+    
 }
+
+def create_model_folder_name(repo_id):
+    """Create a clean folder name from repository ID"""
+    return repo_id.replace("/", "_").replace("-", "_")
 
 def list_available_models():
     """List all available models"""
@@ -47,6 +55,7 @@ def list_available_models():
         logging.info(f"{i}. {info['name']}")
         logging.info(f"   Repository: {repo_id}")
         logging.info(f"   Description: {info['description']}")
+        logging.info(f"   Local folder: {info['local_dir']}")
         logging.info("")
 
 def download_file_with_progress(repo_id, filename, local_dir):
@@ -78,12 +87,18 @@ def download_file_with_progress(repo_id, filename, local_dir):
 
 def download_model(repo_id, custom_files=None):
     """Download a model and its associated files"""
-    if repo_id not in AVAILABLE_MODELS:
-        logging.error(f"Model {repo_id} not found in available models")
-        list_available_models()
-        return False
-    
-    model_info = AVAILABLE_MODELS[repo_id]
+    if repo_id in AVAILABLE_MODELS:
+        model_info = AVAILABLE_MODELS[repo_id]
+    else:
+        # Handle unknown models by creating a default configuration
+        logging.warning(f"Model {repo_id} not in pre-configured list, using auto-detection...")
+        folder_name = create_model_folder_name(repo_id)
+        model_info = {
+            "name": f"Custom model: {repo_id}",
+            "description": "Auto-detected model",
+            "files": custom_files or [],
+            "local_dir": f"models/{folder_name}"
+        }
     
     logging.info(f"Downloading model: {model_info['name']}")
     logging.info(f"Repository: {repo_id}")
@@ -97,15 +112,20 @@ def download_model(repo_id, custom_files=None):
         repo_files = list_repo_files(repo_id)
         logging.info(f"Repository contains {len(repo_files)} files")
         
-        # Filter files that actually exist in the repo
-        available_files = []
-        for file in files_to_download:
-            if file in repo_files:
-                available_files.append(file)
-            else:
-                logging.warning(f"File {file} not found in repository, skipping...")
-        
-        files_to_download = available_files
+        # If no files specified, download all files (excluding hidden files and directories)
+        if not files_to_download:
+            files_to_download = [f for f in repo_files if not f.startswith('.') and '/' not in f]
+            logging.info("No specific files configured, will download all root-level files")
+        else:
+            # Filter files that actually exist in the repo
+            available_files = []
+            for file in files_to_download:
+                if file in repo_files:
+                    available_files.append(file)
+                else:
+                    logging.warning(f"File {file} not found in repository, skipping...")
+            
+            files_to_download = available_files
         
     except Exception as e:
         logging.warning(f"Could not list repository files: {e}")
